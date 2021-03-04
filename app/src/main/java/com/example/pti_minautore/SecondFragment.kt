@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
+import kotlin.system.measureTimeMillis
 
 
 /**
@@ -34,35 +35,38 @@ class SecondFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        val iv = view.findViewById<ImageView>(R.id.imageView2)
 
-        iv.visibility = View.VISIBLE
+        val timeInMillis = measureTimeMillis(){
+            val iv = view.findViewById<ImageView>(R.id.imageView2)
 
+            iv.visibility = View.VISIBLE
+            val bitmap: Bitmap = iv.drawable.toBitmap()
 
-        val bitmap: Bitmap = iv.drawable.toBitmap()
+            val image = InputImage.fromBitmap(bitmap, 0)
 
-        val image = InputImage.fromBitmap(bitmap, 0)
+            val recognizer = TextRecognition.getClient()
 
-        val recognizer = TextRecognition.getClient()
+            var list = mutableListOf<String>()
+            val result = recognizer.process(image)
 
-        var list = mutableListOf<String>()
-        val result = recognizer.process(image)
+                .addOnSuccessListener { visionText ->
+                    list.addAll(succes(visionText))
+                    val et = view.findViewById<TextView>(R.id.textView)
+                    var pred:String = ""
+                    for (elem in list)
+                        pred = pred.plus(elem+"\n")
 
-            .addOnSuccessListener { visionText ->
-                list.addAll(succes(visionText))
-                val et = view.findViewById<TextView>(R.id.textView)
-                var pred:String = ""
-                for (elem in list)
-                    pred = pred.plus(elem+"\n")
+                    et.text = pred
+                }
+                .addOnFailureListener { e ->
+                    // Task failed with an exception
+                    // ...
+                }
+        }
+        println("(The operation took $timeInMillis ms)")
+        val et2 = view.findViewById<TextView>(R.id.textView2)
 
-                et.text = pred
-            }
-            .addOnFailureListener { e ->
-                // Task failed with an exception
-                // ...
-            }
-
-
+        et2.text = timeInMillis.toString()+" ms"
 
         view.findViewById<Button>(R.id.button_second).setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
