@@ -66,7 +66,7 @@ class SecondFragment : Fragment() {
         println("(The operation took $timeInMillis ms)")
         val et2 = view.findViewById<TextView>(R.id.textView2)
 
-        et2.text = timeInMillis.toString()+" ms"
+        et2.text = timeInMillis.toString() + " ms"
 
         view.findViewById<Button>(R.id.button_second).setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
