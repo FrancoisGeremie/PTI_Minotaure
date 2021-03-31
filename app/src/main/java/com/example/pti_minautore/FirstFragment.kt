@@ -10,15 +10,12 @@ import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
@@ -34,6 +31,7 @@ import io.fotoapparat.selector.off
 import io.fotoapparat.selector.torch
 import io.fotoapparat.view.CameraView
 
+
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
@@ -45,7 +43,22 @@ class FirstFragment : Fragment() {
     var flashState: FlashState? = null
     val permissions = arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
     val predlist:MutableList<String> = mutableListOf()
-    //val context = activity as AppCompatActivity
+    var bms: Bitmap? = null
+    var pred: String = ""
+
+
+
+
+    val t = Thread {
+        val mainHandler = Handler(Looper.getMainLooper())
+
+        mainHandler.post(object : Runnable {
+            override fun run() {
+                repeat()
+                mainHandler.postDelayed(this, 50000)
+            }
+        })
+    }
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -58,50 +71,63 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         createFotoapparat()
-
         cameraStatus = CameraState.BACK
         flashState = FlashState.OFF
         fotoapparatState = FotoapparatState.OFF
 
+
         val switch_camera = view.findViewById<ImageButton>(R.id.switchCam)
         val switch_light = view.findViewById<ImageButton>(R.id.switchLight)
+        val et = view?.findViewById<TextView>(R.id.textViewpred)
+
+
+
 
         switch_camera.setOnClickListener {
             switchCamera()
+            findNavController().navigate(R.id.action_FirstFragment_to_AddFragment)
         }
-
-        val mainHandler = Handler(Looper.getMainLooper())
-
-        mainHandler.post(object : Runnable {
-            override fun run() {
-                scanPic()
-                mainHandler.postDelayed(this, 2500)
-            }
-        })
 
         switch_light.setOnClickListener {
             changeFlashState()
+            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
 
+        Thread.sleep(1000)
+        if (hasNoPermissions()) { requestPermission() } else {
 
-
-
-
-        fun hasNoPermissions(): Boolean {
-            return ContextCompat.checkSelfPermission(requireActivity(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(requireActivity(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(requireActivity(),
-                    Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+            t.start()
         }
 
-        fun requestPermission() {
-            ActivityCompat.requestPermissions(requireActivity(), permissions, 0)
-        }
 
     }
 
+
+
+
+    private fun repeat(){
+
+        var bms = takepic()
+        bms?.let {
+
+            var list = mutableListOf<String>()
+            var vt = scanPic(it)
+
+                //list.addAll(succes(it1))
+                //for (elem in list)
+                 //   pred += elem
+
+                //val bundle = Bundle()
+                //bundle.putString("pred", pred)
+                //activity?.runOnUiThread(Runnable {
+                //this.onStop()
+                //findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundle)  })
+
+
+
+        }
+    }
 
     private fun createFotoapparat() {
         val cameraView = view?.findViewById<CameraView>(R.id.camera_view)
@@ -146,62 +172,64 @@ class FirstFragment : Fragment() {
         else cameraStatus = CameraState.BACK
     }
 
-    private fun scanPic() = if (hasNoPermissions()) {
-        requestPermission()
-    }else{
-        val photoResult = fotoapparat!!.takePicture()
+    private fun takepic ():Bitmap? {
 
+
+        val photoResult = fotoapparat!!.takePicture()
         photoResult
-                .toBitmap()
-                .whenAvailable { bitmapPhoto ->
+
+            .toBitmap()
+            .whenAvailable { bitmapPhoto ->
+
                     val matrix = Matrix()
-                    matrix.postRotate((360- bitmapPhoto?.rotationDegrees!!).toFloat())
+                    matrix.postRotate((360 - bitmapPhoto?.rotationDegrees!!).toFloat())
                     val bm = bitmapPhoto?.bitmap
 
-                    val bmr = Bitmap.createBitmap(bm,0, 0, bm.getWidth(), bm.getHeight(), matrix, true)
-                    val bmc = Bitmap.createBitmap(bmr, bmr.getWidth()/10, bmr.getHeight()/4, 8*bmr.getWidth()/10, bmr.getHeight()/2)
-                    val bms = Bitmap.createScaledBitmap(bmc,200,233,true)
-                    val image = InputImage.fromBitmap(bms, 0)
-                    var list = mutableListOf<String>()
+                    val bmr = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true)
+                    val bmc = Bitmap.createBitmap(bmr, bmr.getWidth() / 10, bmr.getHeight() / 4, 8 * bmr.getWidth() / 10, bmr.getHeight() / 2)
+                    bms = Bitmap.createScaledBitmap(bmc, 350, 300, true)
+            }
+
+        return bms
 
 
-                    val recognizer = TextRecognition.getClient()
-                    val result = recognizer.process(image)
-
-                            .addOnSuccessListener { visionText ->
-                                list.addAll(succes(visionText))
-
-                                var pred:String = ""
-                                for (elem in list)
-                                    pred = pred.plus(elem+"\n")
-
-                                if (pred!="")
-                                    predlist.add(pred)
-                                var count = 0
-                                for (elem in predlist)
-                                    if (elem.equals(pred))
-                                            count +=1
-                                if (count>=3)
-                                    detected(pred)
-
-                            }
-                            .addOnFailureListener { e ->
-                                print("")
-                            }
-
-                }
-
-                }
-
-    private fun detected(pred:String){
-        val et = view?.findViewById<TextView>(R.id.textViewpred)
-        et?.text = pred
-        et?.visibility= VISIBLE
-        val bundle = Bundle()
-        bundle.putString("pred",pred)
-
-        findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment,bundle)
     }
+
+
+    private  fun scanPic(bms:Bitmap) {
+
+
+        val image = InputImage.fromBitmap(bms, 0)
+        val recognizer = TextRecognition.getClient()
+        val result = recognizer.process(image)
+        result
+                .addOnSuccessListener {
+
+                    pred = it.text
+                    if (pred != "") {
+                        predlist += pred
+                    }
+
+                    if (predlist.size >= 2 && predlist.last() in predlist.dropLast(1)) {
+
+                        val bundle = Bundle()
+                        bundle.putString("pred", predlist.last())
+
+                        //onStop()
+                        Thread.interrupted()
+                        findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundle)
+
+
+                    }
+                    pred = ""
+
+                }
+
+
+    }
+
+
+
 
     private fun succes (text : Text): MutableList<String> {
         val list: MutableList<String> = mutableListOf()
@@ -232,6 +260,7 @@ class FirstFragment : Fragment() {
         }else{
             fotoapparat?.start()
             fotoapparatState = FotoapparatState.ON
+
         }
     }
 
@@ -250,6 +279,7 @@ class FirstFragment : Fragment() {
         super.onStop()
         fotoapparat?.stop()
         FotoapparatState.OFF
+        t.interrupt()
     }
 
     override fun onResume() {
@@ -258,6 +288,8 @@ class FirstFragment : Fragment() {
             val intent = Intent(context, MainActivity::class.java)
             startActivity(intent)
             requireActivity().finish()
+            fotoapparat?.start()
+            fotoapparatState = FotoapparatState.ON
         }
     }
 
