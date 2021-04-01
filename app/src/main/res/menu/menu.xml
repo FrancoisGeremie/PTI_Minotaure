@@ -16,5 +16,5 @@
         android:id="@+id/data_ic"
         android:icon="@drawable/database_reader"
         android:title="Mes données"/>
-        app:showAsAction="never" />
+        app:showAsAction="always" />
 </menu>

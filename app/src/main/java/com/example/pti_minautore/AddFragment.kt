@@ -16,7 +16,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Toast
-import com.example.pti_minautore.DBHandler
 
  // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -32,7 +31,7 @@ class AddFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-    val button = view?.findViewById<Button>(R.id.button)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +49,16 @@ class AddFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val name = arguments?.getString("pred")
+        name?.let {
+            val pred = requireView().findViewById<EditText>(R.id.editTextNumber)
+            pred.setText(name)
+        }
+
+
+        val button = view?.findViewById<Button>(R.id.button)
+
+
         var helper = DBHandler(requireContext())
         // instance of database
         var db = helper.readableDatabase
@@ -68,14 +77,14 @@ class AddFragment : Fragment() {
 
     private fun SaveInDB(view: View) {
 
-        val code = view.findViewById<EditText>(R.id.editTextNumber).text.toString()
+        val code = requireView().findViewById<EditText>(R.id.editTextNumber).text.toString()
 
-        val rg = view.findViewById<RadioGroup>(R.id.radioGroup)
+        val rg = requireView().findViewById<RadioGroup>(R.id.radioGroup)
         val checkedID: Int = rg.checkedRadioButtonId
         val sexe = radioSelected(checkedID)
 
-        val mere = view.findViewById<EditText>(R.id.editTextMere).text.toString()
-        val pere = view.findViewById<EditText>(R.id.editTextPere).text.toString()
+        val mere = requireView().findViewById<EditText>(R.id.editTextMere).text.toString()
+        val pere = requireView().findViewById<EditText>(R.id.editTextPere).text.toString()
 
         val dbHandler: DBHandler = DBHandler(requireContext())
 
@@ -83,10 +92,10 @@ class AddFragment : Fragment() {
             val status = dbHandler.writeData(AnimalClass(code.toInt(), sexe, mere.toInt(), pere))
             if (status > -1) {
                 Toast.makeText(requireContext(), "Record saved", Toast.LENGTH_LONG).show()
-                view?.findViewById<EditText>(R.id.editTextNumber).text.clear()
-                view?.findViewById<RadioGroup>(R.id.radioGroup).clearCheck()
-                view?.findViewById<EditText>(R.id.editTextMere).text.clear()
-                view?.findViewById<EditText>(R.id.editTextPere).text.clear()
+                requireView().findViewById<EditText>(R.id.editTextNumber).text.clear()
+                requireView().findViewById<RadioGroup>(R.id.radioGroup).clearCheck()
+                requireView().findViewById<EditText>(R.id.editTextMere).text.clear()
+                requireView().findViewById<EditText>(R.id.editTextPere).text.clear()
 
             }
         } else {

@@ -30,6 +30,8 @@ import io.fotoapparat.selector.front
 import io.fotoapparat.selector.off
 import io.fotoapparat.selector.torch
 import io.fotoapparat.view.CameraView
+import kotlinx.coroutines.*
+import java.lang.Runnable
 
 
 /**
@@ -45,6 +47,8 @@ class FirstFragment : Fragment() {
     val predlist:MutableList<String> = mutableListOf()
     var bms: Bitmap? = null
     var pred: String = ""
+    var job: Job? = null
+
 
 
 
@@ -79,7 +83,6 @@ class FirstFragment : Fragment() {
 
         val switch_camera = view.findViewById<ImageButton>(R.id.switchCam)
         val switch_light = view.findViewById<ImageButton>(R.id.switchLight)
-        val et = view?.findViewById<TextView>(R.id.textViewpred)
 
 
 
@@ -94,39 +97,24 @@ class FirstFragment : Fragment() {
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
 
-        Thread.sleep(1000)
+        Thread.sleep(1500)
         if (hasNoPermissions()) { requestPermission() } else {
 
-            t.start()
+            job = GlobalScope.launch (Dispatchers.Main){
+            while(fotoapparatState == FotoapparatState.ON){
+                repeat()
+                delay(500)
+            }
+                cancel()
+            }
         }
-
-
     }
-
-
 
 
     private fun repeat(){
 
         var bms = takepic()
-        bms?.let {
-
-            var list = mutableListOf<String>()
-            var vt = scanPic(it)
-
-                //list.addAll(succes(it1))
-                //for (elem in list)
-                 //   pred += elem
-
-                //val bundle = Bundle()
-                //bundle.putString("pred", pred)
-                //activity?.runOnUiThread(Runnable {
-                //this.onStop()
-                //findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundle)  })
-
-
-
-        }
+        bms?.let { scanPic(it) }
     }
 
     private fun createFotoapparat() {
@@ -175,20 +163,23 @@ class FirstFragment : Fragment() {
     private fun takepic ():Bitmap? {
 
 
-        val photoResult = fotoapparat!!.takePicture()
-        photoResult
+        if (fotoapparatState == FotoapparatState.ON) {
+            val photoResult = fotoapparat?.takePicture()
+            photoResult
 
-            .toBitmap()
-            .whenAvailable { bitmapPhoto ->
+                    ?.toBitmap()
+                    ?.whenAvailable { bitmapPhoto ->
 
-                    val matrix = Matrix()
-                    matrix.postRotate((360 - bitmapPhoto?.rotationDegrees!!).toFloat())
-                    val bm = bitmapPhoto?.bitmap
+                        val matrix = Matrix()
+                        if (bitmapPhoto?.rotationDegrees!=null) {
+                        matrix.postRotate((360 - bitmapPhoto?.rotationDegrees!!).toFloat())}
+                        val bm = bitmapPhoto?.bitmap
 
-                    val bmr = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true)
-                    val bmc = Bitmap.createBitmap(bmr, bmr.getWidth() / 10, bmr.getHeight() / 4, 8 * bmr.getWidth() / 10, bmr.getHeight() / 2)
-                    bms = Bitmap.createScaledBitmap(bmc, 350, 300, true)
-            }
+                        val bmr = bm?.let { Bitmap.createBitmap(it, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true) }
+                        val bmc = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth() / 10, bmr.getHeight() / 4, 8 * bmr.getWidth() / 10, bmr.getHeight() / 2) }
+                        bms = bmc?.let { Bitmap.createScaledBitmap(it, 350, 300, true) }
+                    }
+        }
 
         return bms
 
@@ -212,12 +203,8 @@ class FirstFragment : Fragment() {
 
                     if (predlist.size >= 2 && predlist.last() in predlist.dropLast(1)) {
 
-                        val bundle = Bundle()
-                        bundle.putString("pred", predlist.last())
 
-                        //onStop()
-                        Thread.interrupted()
-                        findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundle)
+                        onpred(predlist.last())
 
 
                     }
@@ -228,7 +215,13 @@ class FirstFragment : Fragment() {
 
     }
 
-
+    private fun onpred(pred : String){
+        val bundle = Bundle()
+        bundle.putString("pred",pred )
+        predlist.clear()
+        findNavController().navigate(R.id.action_FirstFragment_to_AddFragment, bundle)
+        job?.cancel()
+    }
 
 
     private fun succes (text : Text): MutableList<String> {
@@ -279,7 +272,6 @@ class FirstFragment : Fragment() {
         super.onStop()
         fotoapparat?.stop()
         FotoapparatState.OFF
-        t.interrupt()
     }
 
     override fun onResume() {
