@@ -10,11 +10,11 @@
     <item
         android:id="@+id/camera_ic"
         android:icon="@drawable/camera_check"
-        android:title="Caméra"/>
+        android:title="Camera"/>
 
     <item
         android:id="@+id/data_ic"
         android:icon="@drawable/database_reader"
-        android:title="Mes données"/>
+        android:title="MesDonnees"/>
         app:showAsAction="always" />
 </menu>

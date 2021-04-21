@@ -59,16 +59,6 @@ class AddFragment : Fragment() {
         val button = view?.findViewById<Button>(R.id.button)
 
 
-        var helper = DBHandler(requireContext())
-        // instance of database
-        var db = helper.readableDatabase
-        var rs = db.rawQuery("SELECT * FROM BETAIL", null)
-
-        if(rs.moveToNext()){
-            Toast.makeText(requireContext(), rs.getString(1), Toast.LENGTH_LONG).show()
-        }
-
-
         button?.setOnClickListener{
             view -> SaveInDB(view)
         }

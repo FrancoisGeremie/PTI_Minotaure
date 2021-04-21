@@ -6,16 +6,17 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.provider.Contacts
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
@@ -32,12 +33,15 @@ import io.fotoapparat.selector.torch
 import io.fotoapparat.view.CameraView
 import kotlinx.coroutines.*
 import java.lang.Runnable
+import kotlin.properties.Delegates
 
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
+@Suppress("DEPRECATION")
 class FirstFragment : Fragment() {
+
 
     var fotoapparat: Fotoapparat? = null
     var fotoapparatState : FotoapparatState? = null
@@ -47,22 +51,23 @@ class FirstFragment : Fragment() {
     val predlist:MutableList<String> = mutableListOf()
     var bms: Bitmap? = null
     var pred: String = ""
-    var job: Job? = null
-
-
-
-
-
-    val t = Thread {
-        val mainHandler = Handler(Looper.getMainLooper())
-
-        mainHandler.post(object : Runnable {
-            override fun run() {
-                repeat()
-                mainHandler.postDelayed(this, 50000)
-            }
-        })
+    var done = false
+    val t = lifecycleScope.async(Dispatchers.Unconfined) {
+        lifecycleScope.async(Dispatchers.Unconfined) {
+            repeat()
+        }.await()
     }
+
+
+    private var pred1 by Delegates.observable(0) { property, oldValue, newValue ->
+
+        if (predlist.size >= 2 && predlist.last() in predlist.dropLast(1)) {
+            onpred(predlist.last())
+            predlist.clear()
+
+        }
+    }
+
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -74,6 +79,7 @@ class FirstFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         createFotoapparat()
         cameraStatus = CameraState.BACK
@@ -89,32 +95,63 @@ class FirstFragment : Fragment() {
 
         switch_camera.setOnClickListener {
             switchCamera()
-            findNavController().navigate(R.id.action_FirstFragment_to_AddFragment)
         }
 
         switch_light.setOnClickListener {
             changeFlashState()
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
 
-        Thread.sleep(1500)
-        if (hasNoPermissions()) { requestPermission() } else {
-
-            job = GlobalScope.launch (Dispatchers.Main){
-            while(fotoapparatState == FotoapparatState.ON){
-                repeat()
-                delay(500)
-            }
-                cancel()
-            }
-        }
     }
 
 
-    private fun repeat(){
+    private fun onpred(pred : String){
+        val bundle = Bundle()
+        done = true
+        bundle.putString("pred",pred )
+        predlist.clear()
+        (activity as MainActivity).replaceFragment(AddFragment(),bundle)
 
-        var bms = takepic()
-        bms?.let { scanPic(it) }
+    }
+
+    private suspend fun repeat(){
+        while (done==false) {
+            if (fotoapparatState == FotoapparatState.ON) {
+                //repeat()
+
+
+                val photoResult = fotoapparat?.takePicture()
+                photoResult
+
+                        ?.toBitmap()
+                        ?.whenAvailable { bitmapPhoto ->
+
+                            val matrix = Matrix()
+                            if (bitmapPhoto?.rotationDegrees != null) {
+                                matrix.postRotate((360 - bitmapPhoto?.rotationDegrees!!).toFloat())
+                            }
+                            val bm = bitmapPhoto?.bitmap
+
+                            val bmr = bm?.let { Bitmap.createBitmap(it, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true) }
+                            val bmc = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth() / 10, bmr.getHeight() / 4, 8 * bmr.getWidth() / 10, bmr.getHeight() / 2) }
+                            bms = bmc?.let { Bitmap.createScaledBitmap(it, 250, 150, true) }
+
+                        }
+                if (bms !=null) {
+                    val image = InputImage.fromBitmap(bms, 0)
+                    bms = null
+                    val recognizer = TextRecognition.getClient()
+                    val result = recognizer.process(image)
+                    result.addOnSuccessListener {
+                        if (it.text !=""){
+                            predlist.add(it.text)
+                            pred1 += 1
+                        }
+                    }
+                }
+
+            }
+            delay(200)
+        }
     }
 
     private fun createFotoapparat() {
@@ -160,68 +197,6 @@ class FirstFragment : Fragment() {
         else cameraStatus = CameraState.BACK
     }
 
-    private fun takepic ():Bitmap? {
-
-
-        if (fotoapparatState == FotoapparatState.ON) {
-            val photoResult = fotoapparat?.takePicture()
-            photoResult
-
-                    ?.toBitmap()
-                    ?.whenAvailable { bitmapPhoto ->
-
-                        val matrix = Matrix()
-                        if (bitmapPhoto?.rotationDegrees!=null) {
-                        matrix.postRotate((360 - bitmapPhoto?.rotationDegrees!!).toFloat())}
-                        val bm = bitmapPhoto?.bitmap
-
-                        val bmr = bm?.let { Bitmap.createBitmap(it, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true) }
-                        val bmc = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth() / 10, bmr.getHeight() / 4, 8 * bmr.getWidth() / 10, bmr.getHeight() / 2) }
-                        bms = bmc?.let { Bitmap.createScaledBitmap(it, 350, 300, true) }
-                    }
-        }
-
-        return bms
-
-
-    }
-
-
-    private  fun scanPic(bms:Bitmap) {
-
-
-        val image = InputImage.fromBitmap(bms, 0)
-        val recognizer = TextRecognition.getClient()
-        val result = recognizer.process(image)
-        result
-                .addOnSuccessListener {
-
-                    pred = it.text
-                    if (pred != "") {
-                        predlist += pred
-                    }
-
-                    if (predlist.size >= 2 && predlist.last() in predlist.dropLast(1)) {
-
-
-                        onpred(predlist.last())
-
-
-                    }
-                    pred = ""
-
-                }
-
-
-    }
-
-    private fun onpred(pred : String){
-        val bundle = Bundle()
-        bundle.putString("pred",pred )
-        predlist.clear()
-        findNavController().navigate(R.id.action_FirstFragment_to_AddFragment, bundle)
-        job?.cancel()
-    }
 
 
     private fun succes (text : Text): MutableList<String> {
@@ -246,16 +221,22 @@ class FirstFragment : Fragment() {
         return list
     }
 
+
     override fun onStart() {
         super.onStart()
         if (hasNoPermissions()) {
             requestPermission()
         }else{
-            fotoapparat?.start()
-            fotoapparatState = FotoapparatState.ON
+            if ( fotoapparatState == FotoapparatState.OFF){
+                fotoapparat?.start()
+                fotoapparatState = FotoapparatState.ON
+
+            }
 
         }
     }
+
+
 
     private fun hasNoPermissions(): Boolean{
         return ContextCompat.checkSelfPermission(requireActivity(),
@@ -270,18 +251,23 @@ class FirstFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        fotoapparat?.stop()
+        //t.interrupt()
         FotoapparatState.OFF
+        fotoapparat?.stop()
+
+
     }
 
     override fun onResume() {
         super.onResume()
+
         if(!hasNoPermissions() && fotoapparatState == FotoapparatState.OFF){
-            val intent = Intent(context, MainActivity::class.java)
-            startActivity(intent)
-            requireActivity().finish()
+            //val intent = Intent(context, MainActivity::class.java)
+            //startActivity(intent)
+            //requireActivity().finish()
             fotoapparat?.start()
             fotoapparatState = FotoapparatState.ON
+
         }
     }
 
