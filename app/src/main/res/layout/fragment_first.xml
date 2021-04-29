@@ -11,32 +11,6 @@
     tools:menu="@menu/menu">
 
 
-    <ImageButton
-        android:id="@+id/switchCam"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_marginEnd="25dp"
-        android:layout_marginRight="25dp"
-        android:layout_marginBottom="25dp"
-        android:background="#00FFFFFF"
-        android:src="@drawable/ic_baseline_cameraswitch_64"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/switchLight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="25dp"
-        android:layout_marginLeft="25dp"
-        android:layout_marginTop="25dp"
-        android:layout_marginBottom="25dp"
-        android:background="#00EDE6E6"
-        android:src="@drawable/ic_baseline_flash_on_64"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <io.fotoapparat.view.CameraView
         android:id="@+id/camera_view"
         android:layout_width="match_parent"
@@ -45,5 +19,57 @@
         tools:layout_editor_absoluteY="-67dp">
 
     </io.fotoapparat.view.CameraView>
+
+    <ImageButton
+        android:id="@+id/switchCam"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
+        android:background="#00FFFFFF"
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:src="@drawable/ic_baseline_cameraswitch_64"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/switchLight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
+        android:background="#00EDE6E6"
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:src="@drawable/ic_baseline_flash_on_64"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchCam" />
+
+    <ImageButton
+        android:id="@+id/scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:scaleX="0.8"
+        android:scaleY="0.8"
+        android:src="@drawable/circle"
+        android:translationY="-75dp"
+        app:layout_constraintBottom_toBottomOf="@+id/camera_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_sans_titre__1_"
+        app:tint="#FFFFFF"
+        android:translationY="-75dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
