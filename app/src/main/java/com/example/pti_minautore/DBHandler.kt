@@ -84,4 +84,23 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         }
         return animalList
     }
+
+    // Update un animal
+    fun updateData(animal: AnimalClass): Int {
+        val db = this.writableDatabase
+
+        var cv = ContentValues()
+        cv.put(KEY_CODE, animal.code)
+        cv.put(KEY_SEXE, animal.sexe)
+        cv.put(KEY_MERE, animal.mere)
+        cv.put(KEY_PERE, animal.pere)
+
+        // Updating Row
+        val success = db.update(DATABASE_TABLE, cv, KEY_CODE + "=" + animal.code, null)
+        //2nd argument is String containing nullColumnHack
+
+        // Closing database connection
+        db.close()
+        return success
+    }
 }

@@ -1,11 +1,18 @@
 package com.example.pti_minautore
 
+import android.app.Activity
+import android.app.Dialog
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -79,4 +86,9 @@ fun AppCompatActivity.replaceFragment(fragment: Fragment, bundle:Bundle=Bundle()
     transaction.addToBackStack(null)
     transaction.commit()
 }
+
+
+
+
+
 

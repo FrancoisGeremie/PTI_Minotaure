@@ -63,6 +63,7 @@ class AddFragment : Fragment() {
             view -> SaveInDB(view)
         }
 
+
     }
 
     private fun SaveInDB(view: View) {
@@ -86,6 +87,7 @@ class AddFragment : Fragment() {
                 requireView().findViewById<RadioGroup>(R.id.radioGroup).clearCheck()
                 requireView().findViewById<EditText>(R.id.editTextMere).text.clear()
                 requireView().findViewById<EditText>(R.id.editTextPere).text.clear()
+
 
             }
         } else {
