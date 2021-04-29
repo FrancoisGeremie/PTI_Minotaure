@@ -42,10 +42,10 @@ class SecondFragment : Fragment() {
             tv?.text = name
             tv?.visibility=VISIBLE}*/
 
-        setupListofDataIntoRecyclerView()
+        //setupListofDataIntoRecyclerView()
 
     }
-
+    /*
     /**
      * Function is used to show the list on UI of inserted data.
      */
@@ -127,6 +127,8 @@ class SecondFragment : Fragment() {
         //Start the dialog and display it on screen.
         updateDialog.show()
     }
+    */
+
 
 
 }

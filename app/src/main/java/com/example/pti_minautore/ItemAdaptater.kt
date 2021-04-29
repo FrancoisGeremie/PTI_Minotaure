@@ -19,6 +19,7 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
      * create a new
      * {@link ViewHolder} and initializes some private fields to be used by RecyclerView.
      */
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
                 LayoutInflater.from(context).inflate(
@@ -39,6 +40,7 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
      * of the given type. You can either create a new View manually or inflate it from an XML
      * layout file.
      */
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         val item = items.get(position)
@@ -90,4 +92,6 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
         val ivEdit = view.findViewById<ImageView>(R.id.ivEdit)
         val ivDelete = view.findViewById<ImageView>(R.id.ivDelete)
     }
+
+
 }
