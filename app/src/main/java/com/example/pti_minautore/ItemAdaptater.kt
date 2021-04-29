@@ -45,6 +45,8 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
 
         holder.tvCode.text = item.code.toString()
         holder.tvSexe.text = item.sexe
+        holder.tvMere.text = item.mere.toString()
+        holder.tvPere.text = item.pere
 
         // Updating the background color according to the odd/even positions in list.
         if (position % 2 == 0) {
@@ -58,15 +60,14 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
             holder.llMain.setBackgroundColor(ContextCompat.getColor(context, R.color.colorWhite))
         }
 
-        holder.ivEdit.setOnClickListener { view ->
-
-            //context.updateRecordDialog(item)
+        holder.ivEdit.setOnClickListener {
+            //view -> context.updateRecordDialog(AnimalClass(item.code, item.sexe, item.mere, item.pere))
 
 
         }
         holder.ivDelete.setOnClickListener { view ->
 
-            //context.deleteRecordDialog(item)
+            //context.deleteRecordDialog(AnimalClass(item.code, item.sexe, item.mere, item.pere))
 
         }
     }
@@ -84,6 +85,8 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
         val llMain = view.findViewById<LinearLayout>(R.id.llMain)
         val tvCode = view.findViewById<TextView>(R.id.tvCode)
         val tvSexe = view.findViewById<TextView>(R.id.tvSexe)
+        val tvMere = view.findViewById<TextView>(R.id.tvMere)
+        val tvPere = view.findViewById<TextView>(R.id.tvPere)
         val ivEdit = view.findViewById<ImageView>(R.id.ivEdit)
         val ivDelete = view.findViewById<ImageView>(R.id.ivDelete)
     }
