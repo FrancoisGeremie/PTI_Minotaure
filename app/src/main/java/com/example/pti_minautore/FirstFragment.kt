@@ -1,31 +1,21 @@
 package com.example.pti_minautore
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Color.red
 import android.graphics.Matrix
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
-import android.provider.Contacts
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageButton
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.os.postDelayed
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import io.fotoapparat.Fotoapparat
 import io.fotoapparat.configuration.CameraConfiguration
@@ -37,11 +27,6 @@ import io.fotoapparat.selector.front
 import io.fotoapparat.selector.off
 import io.fotoapparat.selector.torch
 import io.fotoapparat.view.CameraView
-import kotlinx.coroutines.*
-import java.lang.Runnable
-import java.text.BreakIterator
-import kotlin.properties.Delegates
-import kotlin.system.measureTimeMillis
 
 
 /**
@@ -50,13 +35,17 @@ import kotlin.system.measureTimeMillis
 @Suppress("DEPRECATION")
 class FirstFragment : Fragment() {
 
-
+    //création des objects relatifs à l'appareil photo
     var fotoapparat: Fotoapparat? = null
     var fotoapparatState : FotoapparatState? = null
     var cameraStatus : CameraState? = null
     var flashState: FlashState? = null
     val permissions = arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+
+    //liste utilisée pour stocker les prédictions sur chaque capture
     val predlist:MutableList<String> = mutableListOf()
+
+    //instance de l'outil OCR de MLKit
     val recognizer = TextRecognition.getClient()
 
 
@@ -76,9 +65,11 @@ class FirstFragment : Fragment() {
         flashState = FlashState.OFF
         fotoapparatState = FotoapparatState.OFF
 
+        //déclaration et listener des boutons
         val switch_camera = view.findViewById<ImageButton>(R.id.switchCam)
         val switch_light = view.findViewById<ImageButton>(R.id.switchLight)
         val scan = view.findViewById<ImageButton>(R.id.scan)
+        val scan_running = view.findViewById<ImageButton>(R.id.scan_running)
 
         switch_camera.setOnClickListener {
             switchCamera()
@@ -89,63 +80,60 @@ class FirstFragment : Fragment() {
         }
 
         scan.setOnClickListener {
-            scanning()
+            // on analyse un certains nombres d'images pour s'assurer que la prédiction soit fiable
+
+            scan_running.visibility= VISIBLE // désactivation et animation du bouton pendant l'analyse
+            scan.visibility= INVISIBLE
+            for (x in 1..10) {
+                repeat()
+            }
+            Handler().postDelayed({
+                //réactivation du bouton une fois l'analyse terminée
+                scan.visibility= VISIBLE
+                scan_running.visibility= INVISIBLE
+            }, 5000)
+
         }
-    }
-
-    private fun scanning(){
-        lifecycleScope.async(Dispatchers.Main){
-                for (x in 1..10) {
-                    lifecycleScope.async(Dispatchers.Main) {
-                        repeat()
-                    }
-                    delay(50)
-                }
-        }
-    }
-
-    private fun onpred(pred : String){
-
-        val bundle = Bundle()
-        bundle.putString("pred",pred )
-        predlist.clear()
-
-        //val dbHandler: DBHandler = DBHandler(requireContext())
-        //val status = dbHandler.readData()
-
-
-        if(true){ (activity as MainActivity).replaceFragment(AddFragment(),bundle)}
-        else{(activity as MainActivity).replaceFragment(SecondFragment(),bundle)}
     }
 
     private fun repeat(){
 
-        if (fotoapparatState == FotoapparatState.ON) {
+        if (fotoapparatState == FotoapparatState.ON) { // Vérification que l'appareil photo est actif
 
-            val photoResult = fotoapparat?.takePicture()
+            val photoResult = fotoapparat?.takePicture() // capture d'une image
             photoResult
 
                     ?.toBitmap()
                     ?.whenAvailable { bitmapPhoto ->
-
+                        //si une photo a été capturée
                         val matrix = Matrix()
                         if (bitmapPhoto?.rotationDegrees != null) {
+                            //création de la matrice qui sera utilisée pour remettre l'image dans le bon sens
                             matrix.postRotate((360 - bitmapPhoto?.rotationDegrees!!).toFloat())
                         }
 
+
                         var bms : Bitmap? = null
                         val bm = bitmapPhoto?.bitmap
+
+                        // rescale ,rotation et crop de l'image
                         val bmt = bm?.let { Bitmap.createScaledBitmap(it, (500*(bm.width.toFloat()/bm.height)).toInt(), 500, true) }
                         val bmr = bmt?.let { Bitmap.createBitmap(it, 0, 0, bmt.getWidth(), bmt.getHeight(), matrix, true)  }
                         bms = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth()/6, bmr.getHeight() / 3,  4*bmr.getWidth()/6 , bmr.getHeight() / 3)}
 
                         if (bms != null) {
-                            val result = recognizer.process(InputImage.fromBitmap(bms, 0))
+                            val result = recognizer.process(InputImage.fromBitmap(bms, 0)) //analyse de la photo par MLKit OCR
                             result.addOnSuccessListener {
-                                if (it.text!=""){
-                                    predlist.add(it.text)
-                                    if (predlist.size >= 2 && predlist.last() in predlist.dropLast(1)) {
-                                        onpred(predlist.last())
+                                // si un texte est détecté
+                                val poss_pred = it.text.replace("\\s".toRegex(), "").takeLast(4) // on enlève les charactères spéciaux et on guarde les 4 derniers chiffres ( ou tous si - de 4 éléments)
+                                if (poss_pred.length.equals(4) && poss_pred.all { it in '0'..'9' }){ // vérification que l'on obtient le bon nombre de charactères et que chaque charactère est un integer
+
+                                    if (predlist.size >= 1 && poss_pred in predlist) {
+                                        //si la même prédiction a déjà été effectué
+                                        onpred(poss_pred)
+                                    }else {
+                                        //ajout à la liste des prédictions
+                                        predlist.add(poss_pred)
                                     }
                                 }
                             }
@@ -153,6 +141,22 @@ class FirstFragment : Fragment() {
                     }
         }
     }
+
+    private fun onpred(pred : String){
+        // fonction appelée quand une prédiction définitive à été trouvée
+        val bundle = Bundle()
+        bundle.putString("pred",pred )
+        predlist.clear()
+
+        //changement de fragment en fournissant la prédiction
+        if(true){ (activity as MainActivity).replaceFragment(AddFragment(),bundle)}
+        else{(activity as MainActivity).replaceFragment(SecondFragment(),bundle)}
+    }
+
+
+    /*
+        Les fonctions suivantes sont relatives à l'appareil photo
+     */
 
     private fun createFotoapparat() {
         val cameraView = view?.findViewById<CameraView>(R.id.camera_view)

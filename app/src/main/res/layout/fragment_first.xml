@@ -57,6 +57,22 @@
         android:scaleY="0.8"
         android:src="@drawable/circle"
         android:translationY="-75dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/camera_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+        android:id="@+id/scan_running"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:scaleX="0.95"
+        android:scaleY="0.95"
+        android:src="@drawable/circle"
+        android:tint="#FF0000"
+        android:translationY="-75dp"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/camera_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
