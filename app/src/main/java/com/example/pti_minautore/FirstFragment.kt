@@ -40,7 +40,7 @@ class FirstFragment : Fragment() {
     var fotoapparatState : FotoapparatState? = null
     var cameraStatus : CameraState? = null
     var flashState: FlashState? = null
-    val permissions = arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+    val permissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
 
     //liste utilisée pour stocker les prédictions sur chaque capture
     val predlist:MutableList<String> = mutableListOf()
@@ -109,17 +109,17 @@ class FirstFragment : Fragment() {
                         val matrix = Matrix()
                         if (bitmapPhoto?.rotationDegrees != null) {
                             //création de la matrice qui sera utilisée pour remettre l'image dans le bon sens
-                            matrix.postRotate((360 - bitmapPhoto?.rotationDegrees!!).toFloat())
+                            matrix.postRotate((360 - bitmapPhoto.rotationDegrees).toFloat())
                         }
 
 
-                        var bms : Bitmap? = null
+
                         val bm = bitmapPhoto?.bitmap
 
                         // rescale ,rotation et crop de l'image
                         val bmt = bm?.let { Bitmap.createScaledBitmap(it, (500*(bm.width.toFloat()/bm.height)).toInt(), 500, true) }
                         val bmr = bmt?.let { Bitmap.createBitmap(it, 0, 0, bmt.getWidth(), bmt.getHeight(), matrix, true)  }
-                        bms = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth()/6, bmr.getHeight() / 3,  4*bmr.getWidth()/6 , bmr.getHeight() / 3)}
+                        val bms = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth()/6, bmr.getHeight() / 3,  4*bmr.getWidth()/6 , bmr.getHeight() / 3)}
 
                         if (bms != null) {
                             val result = recognizer.process(InputImage.fromBitmap(bms, 0)) //analyse de la photo par MLKit OCR
