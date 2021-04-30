@@ -37,12 +37,21 @@ class MainActivity : AppCompatActivity() {
         try {
             // imaginons qu'on a identifié le numéro 3183
             // après avoir effectué la query
-            //var query = 'select * from DB_troupeau where id=3183
+            var detected = 3183
+            var select = "select mom, dad from DB_troupeau where id= ${detected}"
 
-            var query = "select id from DB_troupeau where id!=3183 AND mom!=3183 AND mom!=5410 AND dad!='Marcel'"
+            // a terme il faut une collonne nom de l'animal si c'est un mâle car je ne peut pas vérifié si on sélectionne le pêre XD
 
-            var cursor =  mDb!!.rawQuery(query, null)
-            if (cursor.moveToFirst()) println (cursor.getString(0)) ;
+            var selectcursor =  mDb!!.rawQuery(select, null)
+            if (selectcursor.moveToFirst()) {
+                var mom = selectcursor.getString(0)
+                var dad = selectcursor.getString(1)
+                println (mom)
+                println (dad)
+                var query = "select id from DB_troupeau where id!=${detected} AND mom!=${detected} AND mom!=${mom} AND dad!='${dad}'"
+                var cursor =  mDb!!.rawQuery(query, null)
+                if (cursor.moveToFirst()) println (cursor.getString(0)) ;
+            } ;
 
 
 
