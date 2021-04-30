@@ -1,21 +1,54 @@
 package com.example.pti_minautore
 
+import android.database.SQLException
+import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
+import com.example.pti_minautore.DatabaseHelper
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
-
-
+    private var mDBHelper: DatabaseHelper? = null
+    private var mDb: SQLiteDatabase? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mDBHelper = DatabaseHelper(this)
+
+        try {
+            mDBHelper!!.updateDataBase()
+        } catch (mIOException: IOException) {
+            throw Error("UnableToUpdateDatabase")
+        }
+
+        mDb = try {
+            mDBHelper!!.getWritableDatabase()
+        } catch (mSQLException: SQLException) {
+            throw mSQLException
+        }
+        try {
+            // imaginons qu'on a identifié le numéro 3183
+            // après avoir effectué la query
+            //var query = 'select * from DB_troupeau where id=3183
+
+            var query = "select id from DB_troupeau where id!=3183 AND mom!=3183 AND mom!=5410 AND dad!='Marcel'"
+
+            var cursor =  mDb!!.rawQuery(query, null)
+            if (cursor.moveToFirst()) println (cursor.getString(0)) ;
+
+
+
+
+        } catch(e: Exception) { e.printStackTrace() }
+
         setContentView(R.layout.activity_main)
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.navigation)
         title=resources.getString(R.string.first_fragment_label)
