@@ -144,13 +144,21 @@ class FirstFragment : Fragment() {
 
     private fun onpred(pred : String){
         // fonction appelée quand une prédiction définitive à été trouvée
+        val DBh = DatabaseHelper(requireContext())
+        DBh.openDataBase()
+        //val InDB = DBh.IsInDB(pred.toInt())
+        val InDB = true
+
+
         val bundle = Bundle()
         bundle.putString("pred",pred )
         predlist.clear()
 
         //changement de fragment en fournissant la prédiction
-        if(true){ (activity as MainActivity).replaceFragment(AddFragment(),bundle)}
+        if(!InDB){ (activity as MainActivity).replaceFragment(AddFragment(),bundle)}
         else{(activity as MainActivity).replaceFragment(SecondFragment(),bundle)}
+
+
     }
 
 
