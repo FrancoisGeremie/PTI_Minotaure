@@ -37,6 +37,11 @@ class SecondFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         pred = arguments?.getString("pred").toString()
+        if (pred !=""){
+            val sf = view.findViewById<EditText>(R.id.search_field)
+            sf.setText(pred)
+
+        }
 
         /*name?.let {
             val tv = view?.findViewById<TextView>(R.id.tv1)
@@ -52,7 +57,7 @@ class SecondFragment : Fragment() {
      */
     private fun setupListofDataIntoRecyclerView() {
 
-        /*if (getItemsList().size > 0) {
+        if (getItemsList().size > 0) {
 
             requireView().findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvItemsList).visibility = View.VISIBLE
             requireView().findViewById<TextView>(R.id.tvNoRecordsAvailable).visibility = View.GONE
@@ -67,7 +72,7 @@ class SecondFragment : Fragment() {
 
             requireView().findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvItemsList).visibility = View.GONE
             requireView().findViewById<TextView>(R.id.tvNoRecordsAvailable).visibility = View.VISIBLE
-        }*/
+        }
     }
 
     /**
