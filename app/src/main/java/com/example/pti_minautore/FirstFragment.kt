@@ -144,12 +144,13 @@ class FirstFragment : Fragment() {
 
     private fun onpred(pred : String){
         // fonction appelée quand une prédiction définitive à été trouvée
+
+        //Check si l'id est déjà dans la base de donnée
         val DBh = DatabaseHelper(requireContext())
         DBh.openDataBase()
-        //val InDB = DBh.IsInDB(pred.toInt())
-        val InDB = true
+        val InDB = DBh.IsInDB(pred.toInt())
 
-
+        //création du bundle pour passer la prédiction aux autres fragments et clear de la liste des prédictions
         val bundle = Bundle()
         bundle.putString("pred",pred )
         predlist.clear()
