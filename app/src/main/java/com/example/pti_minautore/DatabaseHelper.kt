@@ -1,8 +1,11 @@
 package com.example.pti_minautore
 
+import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import android.os.Build
 import java.io.File
@@ -28,7 +31,7 @@ class DatabaseHelper(context: Context) :
             val dbFile =
                     File(DB_PATH + DB_NAME)
             if (dbFile.exists()) dbFile.delete()
-            copyDataBase()
+            findBestMatch()
             mNeedUpdate = false
         }
     }
@@ -39,19 +42,77 @@ class DatabaseHelper(context: Context) :
         return dbFile.exists()
     }
 
-    fun IsInDB(id : Int) : Boolean{
-        val select = "select id from DB_troupeau where id= ${id}"
+    fun IsInDB(id : String) : Boolean{
+        val db = this.readableDatabase
+
+        val req = "SELECT * FROM " + DATABASE_TABLE+ " WHERE id='${id}'"
+        var cursor: Cursor? = null
+        try {
+            cursor = db.rawQuery(req, null)
+            return true
+        }catch(e: SQLiteException){
+            return false
+        }
 
 
-        val selectcursor = mDataBase!!.rawQuery(select, null)
-
-        //vérifier que detected est dans la db
-        if (selectcursor.getCount() != 0){ return true}
-        else{return false}
 
     }
+    fun getIDFromName (name :String):String{
+        val req = "SELECT id FROM ${DATABASE_TABLE} WHERE name='${name}'"
+        var id = "_"
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
 
-    private fun copyDataBase() {
+        try {
+            cursor = db.rawQuery(req, null)
+            if (cursor.getCount() != 0) {
+
+                if (cursor.moveToFirst()) {
+                    id = cursor.getString(0)
+                }
+            }
+        }catch(e: SQLiteException){
+
+        }
+        return id
+    }
+
+    fun getFromAnything (search :String):ArrayList<AnimalClass>{
+        val animalList: ArrayList<AnimalClass> = ArrayList<AnimalClass>()
+        val req = "SELECT * FROM ${DATABASE_TABLE} WHERE id = '${search}' OR name = '${search}'"
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+
+        try {
+            cursor = db.rawQuery(req, null)
+        }catch(e: SQLiteException){
+            db.execSQL(req)
+            return ArrayList()
+        }
+        var id: String
+        var sex: String
+        var mom: String
+        var dad: String
+        var dadname: String
+        var name: String
+
+        if(cursor.moveToFirst()){
+            do{
+                id = cursor.getString(cursor.getColumnIndex(KEY_ID))
+                sex = cursor.getString(cursor.getColumnIndex(KEY_SEX))
+                mom = cursor.getString(cursor.getColumnIndex(KEY_MOM))
+                dad = cursor.getString(cursor.getColumnIndex(KEY_DAD))
+                dadname = cursor.getString(cursor.getColumnIndex(KEY_DAD_NAME))
+                name = cursor.getString(cursor.getColumnIndex(KEY_NAME))
+
+                val animal = AnimalClass(id,sex,mom,dad,dadname,name)
+                animalList.add(animal)
+            }while(cursor.moveToNext())
+        }
+        return animalList
+    }
+
+    private fun findBestMatch() {
         if (!checkDataBase()) {
             this.readableDatabase
             close()
@@ -137,6 +198,65 @@ class DatabaseHelper(context: Context) :
         return mDataBase != null
     }
 
+    // Inserer des donnees
+    fun writeData(animal: AnimalClass): Long{
+        val db = this.writableDatabase
+
+        var cv = ContentValues()
+        cv.put(KEY_ID, animal.id)
+        cv.put(KEY_SEX, animal.sex)
+        cv.put(KEY_MOM, animal.mom)
+        cv.put(KEY_DAD, animal.dad)
+        cv.put(KEY_DAD_NAME, animal.dadname)
+        cv.put(KEY_NAME, animal.name)
+
+        val success = db.insert(DATABASE_TABLE, null, cv)
+
+        db.close()
+
+        return success
+    }
+
+    // Lire des donnees
+    fun readData(): ArrayList<AnimalClass>{
+        val animalList: ArrayList<AnimalClass> = ArrayList<AnimalClass>()
+        val db = this.readableDatabase
+
+        val req = "SELECT * FROM " + DATABASE_TABLE
+        var cursor: Cursor? = null
+
+        try{
+            cursor = db.rawQuery(req, null)
+        }catch(e: SQLiteException){
+            db.execSQL(req)
+            return ArrayList()
+        }
+
+        var id: String
+        var sex: String
+        var mom: String
+        var dad: String
+        var dadname: String
+        var name: String
+
+        if(cursor.moveToFirst()){
+            do{
+                id = cursor.getString(cursor.getColumnIndex(KEY_ID))
+                sex = cursor.getString(cursor.getColumnIndex(KEY_SEX))
+                mom = cursor.getString(cursor.getColumnIndex(KEY_MOM))
+                dad = cursor.getString(cursor.getColumnIndex(KEY_DAD))
+                dadname = cursor.getString(cursor.getColumnIndex(KEY_DAD_NAME))
+                name = cursor.getString(cursor.getColumnIndex(KEY_NAME))
+
+                val animal = AnimalClass(id,sex,mom,dad,dadname,name)
+                 animalList.add(animal)
+            }while(cursor.moveToNext())
+        }
+        return animalList
+    }
+
+
+
     @Synchronized
     override fun close() {
         if (mDataBase != null) mDataBase!!.close()
@@ -153,20 +273,27 @@ class DatabaseHelper(context: Context) :
     }
 
     companion object {
+        private const val DB_VERSION = 1
         private const val DB_NAME = "troupeau.db"
-
-        //mettre le fichier disponible sur ma branche troupeau.db sur un vrai téléphone ou dans l'émulateur au path désiré
-
+        private const val DATABASE_TABLE = "DB_troupeau"
         private var DB_PATH = "/data/data/com.example.pti_minautore/databases/"
 
-        private const val DB_VERSION = 1
+        private const val KEY_ID = "id"
+        private const val KEY_SEX = "sex"
+        private const val KEY_MOM = "mom"
+        private const val KEY_DAD = "dad"
+        private const val KEY_DAD_NAME = "dadname"
+        private const val KEY_NAME = "name"
+
+
+
     }
 
     init {
         DB_PATH =
                 if (Build.VERSION.SDK_INT >= 17) context.applicationInfo.dataDir + "/databases/" else "/data/data/" + context.packageName + "/databases/"
         mContext = context
-        copyDataBase()
+        findBestMatch()
         this.readableDatabase
     }
 }

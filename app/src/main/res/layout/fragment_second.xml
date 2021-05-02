@@ -75,6 +75,7 @@
         android:id="@+id/rvItemsList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:translationY="-50dp"
         android:visibility="visible"
         tools:visibility="gone" />
 

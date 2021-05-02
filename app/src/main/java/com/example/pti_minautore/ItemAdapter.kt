@@ -45,10 +45,10 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
 
         val item = items.get(position)
 
-        holder.tvCode.text = item.code.toString()
-        holder.tvSexe.text = item.sexe
-        holder.tvMere.text = item.mere.toString()
-        holder.tvPere.text = item.pere
+        holder.tvCode.text = item.id
+        holder.tvSexe.text = item.sex
+        holder.tvMere.text = item.mom
+        holder.tvPere.text = item.dad
 
         // Updating the background color according to the odd/even positions in list.
         if (position % 2 == 0) {
@@ -62,16 +62,23 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
             holder.llMain.setBackgroundColor(ContextCompat.getColor(context, R.color.colorLighterGray))
         }
 
-        holder.ivEdit.setOnClickListener {
-            //view -> context.updateRecordDialog(AnimalClass(item.code, item.sexe, item.mere, item.pere))
+        //holder.ivEdit.setOnClickListener {
+            //view -> context.updateRecordDialog(AnimalClass(item.id, item.sex, item.mom, item.dad))
 
 
-        }
-        holder.ivDelete.setOnClickListener { view ->
+        //}
+        //holder.ivDelete.setOnClickListener { view ->
 
-            //context.deleteRecordDialog(AnimalClass(item.code, item.sexe, item.mere, item.pere))
+           //context.deleteRecordDialog(AnimalClass(item.id, item.sex, item.mom, item.dad))
 
-        }
+
+        //}
+    }
+
+    fun updateAdapter( lst : ArrayList<AnimalClass>){
+        items.clear()
+        items.addAll(lst)
+        notifyDataSetChanged()
     }
 
 
@@ -89,8 +96,9 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
         val tvSexe = view.findViewById<TextView>(R.id.tvSexe)
         val tvMere = view.findViewById<TextView>(R.id.tvMere)
         val tvPere = view.findViewById<TextView>(R.id.tvPere)
-        val ivEdit = view.findViewById<ImageView>(R.id.ivEdit)
-        val ivDelete = view.findViewById<ImageView>(R.id.ivDelete)
+        //val ivEdit = view.findViewById<ImageView>(R.id.ivEdit)
+        //val ivDelete = view.findViewById<ImageView>(R.id.ivDelete)
+
     }
 
 

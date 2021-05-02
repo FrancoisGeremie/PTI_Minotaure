@@ -15,6 +15,7 @@ import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 
 /**
@@ -22,6 +23,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
  */
 class SecondFragment : Fragment() {
     var pred = ""
+
+    // Adapter class is initialized and list is passed in the param.
+    var itemAdapter : ItemAdapter? = null
+
+
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
@@ -37,37 +43,42 @@ class SecondFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         pred = arguments?.getString("pred").toString()
-        if (pred !=""){
-            val sf = view.findViewById<EditText>(R.id.search_field)
-            sf.setText(pred)
+
+        val sf = view?.findViewById<EditText>(R.id.search_field)
+        setupListofDataIntoRecyclerView(pred)
+
+        if (pred!=null && pred!="null") {
+            sf?.setText(pred)
 
         }
+        val searchB = view.findViewById<Button>(R.id.button2)
+        searchB.setOnClickListener{
 
-        /*name?.let {
-            val tv = view?.findViewById<TextView>(R.id.tv1)
-            tv?.text = name
-            tv?.visibility=VISIBLE}*/
+            itemAdapter?.updateAdapter(getItemsList(sf?.text.toString()))
+        }
 
-        setupListofDataIntoRecyclerView()
+
 
     }
 
     /**
      * Function is used to show the list on UI of inserted data.
      */
-    private fun setupListofDataIntoRecyclerView() {
+    private fun setupListofDataIntoRecyclerView(search : String) {
 
-        if (getItemsList().size > 0) {
+        if (getItemsList(search).size > 0) {
 
             requireView().findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvItemsList).visibility = View.VISIBLE
             requireView().findViewById<TextView>(R.id.tvNoRecordsAvailable).visibility = View.GONE
 
             // Set the LayoutManager that this RecyclerView will use.
             requireView().findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvItemsList).layoutManager = LinearLayoutManager(requireContext())
-            // Adapter class is initialized and list is passed in the param.
-            val itemAdapter = ItemAdapter(requireContext(), getItemsList())
+
+            itemAdapter = ItemAdapter(requireContext(), getItemsList(search))
+
             // adapter instance is set to the recyclerview to inflate the items.
             requireView().findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvItemsList).adapter = itemAdapter
+
         } else {
 
             requireView().findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvItemsList).visibility = View.GONE
@@ -78,12 +89,16 @@ class SecondFragment : Fragment() {
     /**
      * Function is used to get the Items List from the database table.
      */
-    private fun getItemsList(): ArrayList<AnimalClass> {
-        //creating the instance of DatabaseHandler class
-        val databaseHandler: DBHandler = DBHandler(requireContext())
-        //calling the viewEmployee method of DatabaseHandler class to read the records
-        val animalList: ArrayList<AnimalClass> = databaseHandler.readData()
-
+    private fun getItemsList(search:String): ArrayList<AnimalClass> {
+        val databaseHandler = DatabaseHelper(requireContext())
+        var animalList: ArrayList<AnimalClass> ?= null
+        if (search.equals("null") xor search.equals("")) {
+            //calling the viewEmployee method of DatabaseHandler class to read the records
+            animalList = databaseHandler.readData()
+        }else{
+            animalList = databaseHandler.getFromAnything(search)
+        }
+        animalList.add(0,AnimalClass("Id","     Sexe","Id_mere","Id_pere","Nom_pere","Nom"))
         return animalList
     }
 
@@ -95,28 +110,27 @@ class SecondFragment : Fragment() {
         updateDialog.setContentView(R.layout.dialog_update)
 
         //put values on hints
-        updateDialog.findViewById<EditText>(R.id.etUpdateCode).setText(animalClass.code)
-        updateDialog.findViewById<EditText>(R.id.etUpdateSexe).setText(animalClass.sexe)
-        updateDialog.findViewById<EditText>(R.id.etUpdateMere).setText(animalClass.mere)
-        updateDialog.findViewById<EditText>(R.id.etUpdatePere).setText(animalClass.pere)
+        updateDialog.findViewById<EditText>(R.id.etUpdateCode).setText(animalClass.id)
+        updateDialog.findViewById<EditText>(R.id.etUpdateSexe).setText(animalClass.sex)
+        updateDialog.findViewById<EditText>(R.id.etUpdateMere).setText(animalClass.mom)
+        updateDialog.findViewById<EditText>(R.id.etUpdatePere).setText(animalClass.dad)
 
         updateDialog.findViewById<EditText>(R.id.tvUpdate).setOnClickListener(View.OnClickListener {
 
-            val code = updateDialog.findViewById<EditText>(R.id.etUpdateCode).text.toString()
-            val sexe = updateDialog.findViewById<EditText>(R.id.etUpdateSexe).text.toString()
-            val mere = updateDialog.findViewById<EditText>(R.id.etUpdateMere).text.toString()
-            val pere = updateDialog.findViewById<EditText>(R.id.etUpdatePere).text.toString()
+            val id = updateDialog.findViewById<EditText>(R.id.etUpdateCode).text.toString()
+            val sex = updateDialog.findViewById<EditText>(R.id.etUpdateSexe).text.toString()
+            val mom = updateDialog.findViewById<EditText>(R.id.etUpdateMere).text.toString()
+            val dad = updateDialog.findViewById<EditText>(R.id.etUpdatePere).text.toString()
 
-            val databaseHandler: DBHandler = DBHandler(requireContext())
 
-            if (!code.isEmpty() && !sexe.isEmpty() && !mere.isEmpty() && !pere.isEmpty()) {
+            if (!id.isEmpty() && !sex.isEmpty() && !mom.isEmpty() && !dad.isEmpty()) {
                 val status =
                         //databaseHandler.updateData(AnimalClass(code.toInt(), sexe, mere.toInt(), pere))
                 //if (status > -1) {
 
                     Toast.makeText(requireContext(), "Record Updated.", Toast.LENGTH_LONG).show()
 
-                    setupListofDataIntoRecyclerView()
+                    setupListofDataIntoRecyclerView(" ")
 
                     updateDialog.dismiss() // Dialog will be dismissed
                 //}
@@ -134,11 +148,9 @@ class SecondFragment : Fragment() {
         //Start the dialog and display it on screen.
         updateDialog.show()
     }
-
-
-
-
 }
+
+
 
 
 

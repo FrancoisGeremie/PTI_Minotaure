@@ -1,14 +1,7 @@
  package com.example.pti_minautore
 
-import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import android.os.Handler
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -67,19 +60,21 @@ class AddFragment : Fragment() {
 
     private fun SaveInDB(view: View) {
 
-        val code = requireView().findViewById<EditText>(R.id.editTextNumber).text.toString()
+        val id = requireView().findViewById<EditText>(R.id.editTextNumber).text.toString()
 
         val rg = requireView().findViewById<RadioGroup>(R.id.radioGroup)
         val checkedID: Int = rg.checkedRadioButtonId
-        val sexe = radioSelected(checkedID)
+        val sex = radioSelected(checkedID)
 
-        val mere = requireView().findViewById<EditText>(R.id.editTextMere).text.toString()
-        val pere = requireView().findViewById<EditText>(R.id.editTextPere).text.toString()
+        val mom = requireView().findViewById<EditText>(R.id.editTextMere).text.toString()
+        val dad = requireView().findViewById<EditText>(R.id.editTextPere).text.toString()
+        //val dadname = requireView().findViewById<EditText>(R.id.editTextPere).text.toString()
+        //val name = requireView().findViewById<EditText>(R.id.editTextPere).text.toString()
 
-        val dbHandler: DBHandler = DBHandler(requireContext())
+        val dbHandler = DatabaseHelper(requireContext())
 
-        if (!code.isEmpty() && !sexe.isEmpty() && !mere.isEmpty() && !pere.isEmpty()) {
-            val status = dbHandler.writeData(AnimalClass(code.toInt(), sexe, mere.toInt(), pere))
+        if (!id.isEmpty() && !sex.isEmpty() && !mom.isEmpty() && !dad.isEmpty()) {
+            val status = dbHandler.writeData(AnimalClass(id=id, sex=sex, mom=mom, dad =dbHandler.getIDFromName(dad),dadname=dad,name="_"))
             if (status > -1) {
                 Toast.makeText(requireContext(), "Record saved", Toast.LENGTH_LONG).show()
                 requireView().findViewById<EditText>(R.id.editTextNumber).text.clear()
@@ -95,9 +90,9 @@ class AddFragment : Fragment() {
 
     private fun radioSelected(checkedID: Int): String {
         when(checkedID){
-            R.id.radioButtonF -> return "Femelle"
-            R.id.radioButtonM -> return "Male"
-            else -> {return "pas specifie"}
+            R.id.radioButtonF -> return "F"
+            R.id.radioButtonM -> return "M"
+            else -> {return "_"}
         }
     }
 

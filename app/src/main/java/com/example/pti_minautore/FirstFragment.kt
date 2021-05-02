@@ -84,7 +84,7 @@ class FirstFragment : Fragment() {
 
             scan_running.visibility= VISIBLE // désactivation et animation du bouton pendant l'analyse
             scan.visibility= INVISIBLE
-            for (x in 1..10) {
+            for (x in 1..6) {
                 repeat()
             }
             Handler().postDelayed({
@@ -117,7 +117,7 @@ class FirstFragment : Fragment() {
                         val bm = bitmapPhoto?.bitmap
 
                         // rescale ,rotation et crop de l'image
-                        val bmt = bm?.let { Bitmap.createScaledBitmap(it, (500*(bm.width.toFloat()/bm.height)).toInt(), 500, true) }
+                        val bmt = bm?.let { Bitmap.createScaledBitmap(it, (250*(bm.width.toFloat()/bm.height)).toInt(), 250, true) }
                         val bmr = bmt?.let { Bitmap.createBitmap(it, 0, 0, bmt.getWidth(), bmt.getHeight(), matrix, true)  }
                         val bms = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth()/6, bmr.getHeight() / 3,  4*bmr.getWidth()/6 , bmr.getHeight() / 3)}
 
@@ -147,8 +147,7 @@ class FirstFragment : Fragment() {
 
         //Check si l'id est déjà dans la base de donnée
         val DBh = DatabaseHelper(requireContext())
-        DBh.openDataBase()
-        val InDB = DBh.IsInDB(pred.toInt())
+        val InDB = DBh.IsInDB(pred)
 
         //création du bundle pour passer la prédiction aux autres fragments et clear de la liste des prédictions
         val bundle = Bundle()

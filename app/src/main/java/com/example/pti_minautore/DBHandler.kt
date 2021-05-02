@@ -39,10 +39,12 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         val db = this.writableDatabase
 
         var cv = ContentValues()
-        cv.put(KEY_CODE, animal.code)
-        cv.put(KEY_SEXE, animal.sexe)
-        cv.put(KEY_MERE, animal.mere)
-        cv.put(KEY_PERE, animal.pere)
+        cv.put(KEY_CODE, animal.id)
+        cv.put(KEY_SEXE, animal.sex)
+        cv.put(KEY_MERE, animal.mom)
+        cv.put(KEY_PERE, animal.dad)
+        cv.put(KEY_PERE, animal.dadname)
+        cv.put(KEY_PERE, animal.name)
 
         val success = db.insert(DATABASE_TABLE, null, cv)
 
@@ -66,19 +68,19 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
             return ArrayList()
         }
 
-        var code: Int
+        var code: String
         var sexe: String
-        var mere: Int
+        var mere: String
         var pere: String
 
         if(cursor.moveToFirst()){
             do{
-                code = cursor.getInt(cursor.getColumnIndex(KEY_CODE))
+                code = cursor.getString(cursor.getColumnIndex(KEY_CODE))
                 sexe = cursor.getString(cursor.getColumnIndex(KEY_SEXE))
-                mere = cursor.getInt(cursor.getColumnIndex(KEY_MERE))
+                mere = cursor.getString(cursor.getColumnIndex(KEY_MERE))
                 pere = cursor.getString(cursor.getColumnIndex(KEY_PERE))
 
-                val animal = AnimalClass(code, sexe, mere, pere)
+                val animal = AnimalClass(code, sexe, mere, pere,"","")
                 animalList.add(animal)
             }while(cursor.moveToNext())
         }

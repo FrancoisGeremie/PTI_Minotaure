@@ -71,7 +71,7 @@
         android:textSize="16sp"
         tools:text="Pere" />
 
-    <ImageView
+    <!--<ImageView
         android:id="@+id/ivEdit"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -87,7 +87,7 @@
         android:contentDescription="image"
         android:foreground="?attr/selectableItemBackgroundBorderless"
         android:scaleType="center"
-        android:src="@drawable/ic_action_delete" />
+        android:src="@drawable/ic_action_delete" />-->
 
 
 </LinearLayout>
