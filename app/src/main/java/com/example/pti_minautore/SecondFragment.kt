@@ -98,18 +98,25 @@ class SecondFragment : Fragment() {
         }else{
             animalList = databaseHandler.getFromAnything(search)
         }
-        animalList.add(0,AnimalClass("Id","     Sexe","Id_mere","Id_pere","Nom_pere","Nom"))
+        animalList.add(0, AnimalClass("Id","     Sexe","Id_mere","Id_pere","Nom_pere","Nom"))
         return animalList
     }
 
-    fun updateRecordDialog(animalClass: AnimalClass) {
+    fun updateRecordDialog(animal: AnimalClass) {
         val updateDialog = Dialog(requireContext(), R.style.Theme_Dialog)
         updateDialog.setCancelable(false)
         /*Set the screen content from a layout resource.
          The resource will be inflated, adding all top-level views to the screen.*/
-        updateDialog.setContentView(R.layout.dialog_update)
+        updateDialog.setContentView(R.layout.dialogue_mate)
+        updateDialog.findViewById<TextView>(R.id.tvmate).text = animal.id
+        updateDialog.findViewById<ImageButton>(R.id.close).setOnClickListener {
+            updateDialog.dismiss()
+        }
 
-        //put values on hints
+
+        updateDialog.show()
+
+        /*//put values on hints
         updateDialog.findViewById<EditText>(R.id.etUpdateCode).setText(animalClass.id)
         updateDialog.findViewById<EditText>(R.id.etUpdateSexe).setText(animalClass.sex)
         updateDialog.findViewById<EditText>(R.id.etUpdateMere).setText(animalClass.mom)
@@ -144,9 +151,9 @@ class SecondFragment : Fragment() {
         })
         updateDialog.findViewById<EditText>(R.id.tvCancel).setOnClickListener(View.OnClickListener {
             updateDialog.dismiss()
-        })
+        })*/
         //Start the dialog and display it on screen.
-        updateDialog.show()
+        //updateDialog.show()
     }
 }
 

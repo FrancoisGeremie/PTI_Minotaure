@@ -117,9 +117,9 @@ class FirstFragment : Fragment() {
                         val bm = bitmapPhoto?.bitmap
 
                         // rescale ,rotation et crop de l'image
-                        val bmt = bm?.let { Bitmap.createScaledBitmap(it, (250*(bm.width.toFloat()/bm.height)).toInt(), 250, true) }
+                        val bmt = bm?.let { Bitmap.createScaledBitmap(it, (500*(bm.width.toFloat()/bm.height)).toInt(), 500, true) }
                         val bmr = bmt?.let { Bitmap.createBitmap(it, 0, 0, bmt.getWidth(), bmt.getHeight(), matrix, true)  }
-                        val bms = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth()/6, bmr.getHeight() / 3,  4*bmr.getWidth()/6 , bmr.getHeight() / 3)}
+                        val bms = bmr?.let { Bitmap.createBitmap(it, bmr.getWidth()/6, bmr.getHeight() / 10,  4*bmr.getWidth()/6 , 3*bmr.getHeight() / 5)}
 
                         if (bms != null) {
                             val result = recognizer.process(InputImage.fromBitmap(bms, 0)) //analyse de la photo par MLKit OCR

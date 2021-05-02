@@ -1,5 +1,6 @@
 package com.example.pti_minautore
 
+import android.content.ClipData
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +8,9 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.findFragment
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textview.MaterialTextView
 
 
 class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
@@ -20,7 +23,9 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
      * {@link ViewHolder} and initializes some private fields to be used by RecyclerView.
      */
 
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+
         return ViewHolder(
                 LayoutInflater.from(context).inflate(
                         R.layout.items_row,
@@ -42,7 +47,14 @@ class ItemAdapter(val context: Context, val items: ArrayList<AnimalClass>) :
      */
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.llMain.setOnClickListener{view ->
+            val id = ((view as ViewGroup).getChildAt(0) as MaterialTextView).text.toString()
+            val databaseHandler = DatabaseHelper((view.parent as RecyclerView).findFragment<SecondFragment>().requireContext())
+            var mate = databaseHandler.findBestMatch(id)
+            if (mate =="") mate ="N/A"
+            (view.parent as RecyclerView).findFragment<SecondFragment>().updateRecordDialog(AnimalClass(mate ,"","","","",""))
 
+        }
         val item = items.get(position)
 
         holder.tvCode.text = item.id

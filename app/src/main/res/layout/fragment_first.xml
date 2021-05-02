@@ -38,15 +38,15 @@
         android:id="@+id/switchLight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="80dp"
+        android:layout_marginRight="80dp"
         android:background="#00EDE6E6"
         android:scaleX="0.5"
         android:scaleY="0.5"
         android:src="@drawable/ic_baseline_flash_on_64"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/switchCam" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/scan"
@@ -86,6 +86,16 @@
         android:translationY="-75dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_cadre__2_"
+        android:tint="#E4E4E4"
+        android:translationY="-120dp"
+        app:layout_constraintBottom_toBottomOf="@+id/camera_view"
         app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

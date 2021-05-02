@@ -71,16 +71,18 @@
         android:textSize="16sp"
         tools:text="Pere" />
 
-    <!--<ImageView
-        android:id="@+id/ivEdit"
+
+
+    <!--<ImageButton
+        android:id="@+id/btProcess"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:contentDescription="image"
         android:foreground="?attr/selectableItemBackgroundBorderless"
         android:scaleType="center"
-        android:src="@drawable/ic_action_edit" />
+        android:src="@drawable/ic_action_edit" />-->
 
-    <ImageView
+    <!--<ImageView
         android:id="@+id/ivDelete"
         android:layout_width="50dp"
         android:layout_height="50dp"

@@ -31,7 +31,6 @@ class DatabaseHelper(context: Context) :
             val dbFile =
                     File(DB_PATH + DB_NAME)
             if (dbFile.exists()) dbFile.delete()
-            findBestMatch()
             mNeedUpdate = false
         }
     }
@@ -49,7 +48,8 @@ class DatabaseHelper(context: Context) :
         var cursor: Cursor? = null
         try {
             cursor = db.rawQuery(req, null)
-            return true
+            if (cursor.getCount() != 0) return true
+            else return false
         }catch(e: SQLiteException){
             return false
         }
@@ -112,20 +112,21 @@ class DatabaseHelper(context: Context) :
         return animalList
     }
 
-    private fun findBestMatch() {
-        if (!checkDataBase()) {
+    fun findBestMatch(id:String):String {
+        var mate = ""
+        if (checkDataBase()) {
             this.readableDatabase
             close()
             try {
                 // imaginons qu'on a identifié le numéro 3183
                 // après avoir effectué la query
-                val detected = 3183
+                val detected = id
 
 
-                val select = "select sex, mom, dad, dadname from DB_troupeau where id= ${detected}"
+                val select = "select sex, mom, dad, dadname from DB_troupeau where id= '${detected}'"
 
 
-                val selectcursor = mDataBase!!.rawQuery(select, null)
+                val selectcursor =this.readableDatabase.rawQuery(select, null)
 
                 //vérifier que detected est dans la db
                 if (selectcursor.getCount() != 0){
@@ -138,8 +139,8 @@ class DatabaseHelper(context: Context) :
 
 
                         // vérifier avec la daronne pour paufiner
-                        val selectdaronne = "select mom, dad, dadname from DB_troupeau where id= ${mom}"
-                        val daronnecursor = mDataBase!!.rawQuery(selectdaronne, null)
+                        val selectdaronne = "select mom, dad, dadname from DB_troupeau where id= '${mom}'"
+                        val daronnecursor = this.readableDatabase.rawQuery(selectdaronne, null)
 
                         //daronne dans la db
                         if (daronnecursor.getCount() != 0){
@@ -147,11 +148,12 @@ class DatabaseHelper(context: Context) :
                             val darmom = selectcursor.getString(0)
                             val dardad = selectcursor.getString(1)
 
-                            val query = "select id, sex, mom, dad from DB_troupeau where id!=${detected} AND id!=${mom} AND id!=${dad} AND id!=${darmom} AND id!=${dardad} AND sex!='${sex}' AND mom!=${detected} AND mom!=${mom} AND mom!=${darmom} AND dad!=${detected} AND dad!=${dad} AND dad!=${dardad}"
-                            val cursor = mDataBase!!.rawQuery(query, null)
+                            val query = "select id from DB_troupeau where id!='${detected}' AND id!='${mom}' AND id!='${dad}' AND id!='${darmom}' AND id!='${dardad}' AND sex!='${sex}' AND mom!='${detected}' AND mom!='${mom}' AND mom!='${darmom}' AND dad!='${detected}' AND dad!='${dad}' AND dad!='${dardad}'"
+                            val cursor = this.readableDatabase.rawQuery(query, null)
 
-                            if (cursor.moveToFirst()) println(cursor.getString(0))
-                            // et ici garâce à cursor.getString on peut récupérer les arguments id, sex, mom et dad pour les afficher
+                            if (cursor.moveToFirst()) {
+                               mate = cursor.getString(0)
+                            }
 
 
                         }
@@ -159,18 +161,22 @@ class DatabaseHelper(context: Context) :
                         //daronne pas dans la db
                         else {
                             println("daronne pas dans la db")
-                            val query = "select id, sex, mom, dad from DB_troupeau where id!=${detected} AND id!=${mom} AND id!=${dad} AND sex!='${sex}' AND mom!=${detected} AND mom!=${mom} AND dad!=${detected} AND dad!=${dad}"
-                            val cursor = mDataBase!!.rawQuery(query, null)
-                            if (cursor.moveToFirst()) println(cursor.getString(0))
-                            // et ici garâce à cursor.getString on peut récupérer les arguments id, sex, mom et dad pour les afficher
+                            val query = "select id, sex, mom, dad from DB_troupeau where id!='${detected}' AND id!='${mom}' AND id!='${dad}' AND sex!='${sex}' AND mom!='${detected}' AND mom!='${mom}' AND dad!='${detected}' AND dad!='${dad}'"
+                            val cursor = this.readableDatabase.rawQuery(query, null)
+                            if (cursor.moveToFirst()) {
+                                mate=cursor.getString(0)
+                            }
+
+
                         }
 
                     }
-                } else println("aucun animal ne correspond dans la base de données")
+                }
 
 
             } catch(e: Exception) { e.printStackTrace() }
         }
+        return mate
     }
 
     @Throws(IOException::class)
@@ -293,7 +299,6 @@ class DatabaseHelper(context: Context) :
         DB_PATH =
                 if (Build.VERSION.SDK_INT >= 17) context.applicationInfo.dataDir + "/databases/" else "/data/data/" + context.packageName + "/databases/"
         mContext = context
-        findBestMatch()
         this.readableDatabase
     }
 }
