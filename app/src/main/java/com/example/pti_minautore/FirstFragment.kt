@@ -85,7 +85,7 @@ class FirstFragment : Fragment() {
             scan_running.visibility= VISIBLE // désactivation et animation du bouton pendant l'analyse
             scan.visibility= INVISIBLE
             for (x in 1..6) {
-                repeat()
+                repeat() // onrépète l'analyse 6x et on accepte une prédiction quand elle apparait 2x
             }
             Handler().postDelayed({
                 //réactivation du bouton une fois l'analyse terminée
